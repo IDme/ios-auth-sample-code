@@ -1,0 +1,32 @@
+import Foundation
+
+/// The ID.me environment to connect to.
+public enum IDmeEnvironment: String, Sendable {
+    case sandbox
+    case production
+
+    /// Base URL for the API (authorize, token, userinfo).
+    var apiBaseURL: URL {
+        switch self {
+        case .sandbox:
+            return URL(string: "https://api.idmelabs.com")!
+        case .production:
+            return URL(string: "https://api.id.me")!
+        }
+    }
+
+    /// Base URL for the groups endpoint (production only).
+    var groupsBaseURL: URL {
+        URL(string: "https://groups.id.me")!
+    }
+
+    /// OIDC discovery URL.
+    var discoveryURL: URL {
+        apiBaseURL.appendingPathComponent(".well-known/openid-configuration")
+    }
+
+    /// JWKS URL.
+    var jwksURL: URL {
+        apiBaseURL.appendingPathComponent("oidc/.well-known/jwks")
+    }
+}
