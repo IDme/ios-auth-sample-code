@@ -16,7 +16,7 @@ Add the dependency to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/antspriggs/digital-wallet-ios-sdk.git", from: "1.0.0")
+    .package(url: "https://github.com/IDme/ios-auth-sample-code.git", from: "1.0.0")
 ]
 ```
 
@@ -225,7 +225,7 @@ The `IDmeAuthDemo/` directory contains a full SwiftUI demo app that showcases al
 3. Build and run (Cmd+R)
 4. Select verification policies and tap "Authenticate"
 
-> The demo uses pre-configured ID.me test credentials. To use your own, update the `clientId`, `clientSecret`, and `redirectURI` in `AuthViewModel.swift`.
+> Update the `clientId`, `clientSecret`, and `redirectURI` placeholders in `AuthViewModel.swift` with your ID.me credentials before running.
 
 ## License
 
