@@ -16,7 +16,7 @@ Add the dependency to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/IDme/digital-wallet-ios-sdk.git", from: "1.0.0")
+    .package(url: "https://github.com/IDme/ios-auth-sample-code.git", from: "1.0.0")
 ]
 ```
 
