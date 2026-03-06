@@ -37,14 +37,14 @@ final class AuthViewModel {
 
     private var clientId: String {
         switch environment {
-        case .production: "REDACTED_CLIENT_ID"
+        case .production: "<YOUR_PRODUCTION_CLIENT_ID>"
         case .sandbox: "<YOUR_SANDBOX_CLIENT_ID>"
         }
     }
 
     private var clientSecret: String {
         switch environment {
-        case .production: "REDACTED_CLIENT_SECRET"
+        case .production: "<YOUR_PRODUCTION_CLIENT_SECRET>"
         case .sandbox: "<YOUR_SANDBOX_CLIENT_SECRET>"
         }
     }
