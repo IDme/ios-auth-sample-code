@@ -10,7 +10,6 @@ final class AuthViewModel {
     // MARK: - Configuration Inputs
 
     var selectedPolicies: Set<String> = []
-    var authMode: IDmeAuthMode = .oauthPKCE
     var environment: IDmeEnvironment = .production {
         didSet {
             if oldValue != environment {
@@ -38,14 +37,14 @@ final class AuthViewModel {
 
     private var clientId: String {
         switch environment {
-        case .production: "<YOUR_PRODUCTION_CLIENT_ID>"
+        case .production: "REDACTED_CLIENT_ID"
         case .sandbox: "<YOUR_SANDBOX_CLIENT_ID>"
         }
     }
 
     private var clientSecret: String {
         switch environment {
-        case .production: "<YOUR_PRODUCTION_CLIENT_SECRET>"
+        case .production: "REDACTED_CLIENT_SECRET"
         case .sandbox: "<YOUR_SANDBOX_CLIENT_SECRET>"
         }
     }
@@ -125,7 +124,19 @@ final class AuthViewModel {
         errorMessage = nil
 
         do {
-            payloadClaims = try await auth.rawPayload()
+            let response = try await auth.attributes()
+            var claims: [(key: String, value: String)] = response.attributes.map {
+                (key: $0.handle, value: $0.value ?? "")
+            }
+            for status in response.status {
+                claims.append((key: "\(status.group):verified", value: "\(status.verified)"))
+                if let subgroups = status.subgroups, !subgroups.isEmpty {
+                    for subgroup in subgroups {
+                        claims.append((key: "\(status.group):subgroup", value: subgroup))
+                    }
+                }
+            }
+            payloadClaims = claims
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -144,19 +155,11 @@ final class AuthViewModel {
     // MARK: - Private Helpers
 
     private func buildAuth(scopes: [IDmeScope]) -> IDmeAuth {
-        var scopes = scopes
-
-        // OIDC mode needs the openid scope
-        if authMode == .oidc && !scopes.contains(.openid) {
-            scopes.insert(.openid, at: 0)
-        }
-
         let config = IDmeConfiguration(
             clientId: clientId,
             redirectURI: redirectURI,
             scopes: scopes,
             environment: environment,
-            authMode: authMode,
             verificationType: verificationType,
             clientSecret: clientSecret
         )

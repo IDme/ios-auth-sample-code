@@ -5,7 +5,7 @@ public enum IDmeEnvironment: String, Sendable {
     case sandbox
     case production
 
-    /// Base URL for the API (authorize, token, userinfo).
+    /// Base URL for the API (authorize, token, attributes).
     var apiBaseURL: URL {
         switch self {
         case .sandbox:
@@ -18,15 +18,5 @@ public enum IDmeEnvironment: String, Sendable {
     /// Base URL for the groups endpoint (production only).
     var groupsBaseURL: URL {
         URL(string: "https://groups.id.me")!
-    }
-
-    /// OIDC discovery URL.
-    var discoveryURL: URL {
-        apiBaseURL.appendingPathComponent(".well-known/openid-configuration")
-    }
-
-    /// JWKS URL.
-    var jwksURL: URL {
-        apiBaseURL.appendingPathComponent("oidc/.well-known/jwks")
     }
 }

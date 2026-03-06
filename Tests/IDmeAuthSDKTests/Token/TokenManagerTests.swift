@@ -52,7 +52,6 @@ struct TokenManagerTests {
             tokenType: "Bearer",
             expiresIn: 3600,
             refreshToken: "new-refresh",
-            idToken: nil,
             scope: nil
         )
         let manager = TokenManager(credentialStore: store, refresher: refresher)

@@ -18,15 +18,11 @@ struct TokenRefresher: TokenRefreshing {
     func refresh(refreshToken: String) async throws -> TokenResponse {
         let tokenURL = APIEndpoint.token(environment: configuration.environment)
 
-        var body: [String: String] = [
+        let body: [String: String] = [
             "grant_type": "refresh_token",
             "refresh_token": refreshToken,
             "client_id": configuration.clientId
         ]
-
-        if let clientSecret = configuration.clientSecret {
-            body["client_secret"] = clientSecret
-        }
 
         let bodyString = body.map { "\($0.key)=\(percentEncode($0.value))" }.joined(separator: "&")
 

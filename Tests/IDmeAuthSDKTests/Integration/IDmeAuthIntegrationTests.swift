@@ -13,14 +13,11 @@ struct IDmeAuthIntegrationTests {
         let mockStore = MockCredentialStore()
         let refresher = TokenRefresher(configuration: TestFixtures.singleConfig, httpClient: mockHTTP)
         let tokenManager = TokenManager(credentialStore: mockStore, refresher: refresher)
-        let jwksFetcher = MockJWKSFetcher()
-        jwksFetcher.jwks = JWKS(keys: [])
 
         let idme = IDmeAuth(
             configuration: TestFixtures.singleConfig,
             tokenManager: tokenManager,
-            httpClient: mockHTTP,
-            jwksFetcher: jwksFetcher
+            httpClient: mockHTTP
         )
 
         let mockSession = MockWebAuthSession()
@@ -46,14 +43,11 @@ struct IDmeAuthIntegrationTests {
         let mockStore = MockCredentialStore()
         let refresher = TokenRefresher(configuration: TestFixtures.groupsConfig, httpClient: mockHTTP)
         let tokenManager = TokenManager(credentialStore: mockStore, refresher: refresher)
-        let jwksFetcher = MockJWKSFetcher()
-        jwksFetcher.jwks = JWKS(keys: [])
 
         let idme = IDmeAuth(
             configuration: TestFixtures.groupsConfig,
             tokenManager: tokenManager,
-            httpClient: mockHTTP,
-            jwksFetcher: jwksFetcher
+            httpClient: mockHTTP
         )
 
         let mockSession = MockWebAuthSession()
@@ -68,38 +62,6 @@ struct IDmeAuthIntegrationTests {
         #expect(capturedURL.absoluteString.contains("scopes="))
     }
 
-    @Test("Rejects OAuth mode without client secret")
-    func rejectsOAuthWithoutSecret() async {
-        let config = IDmeConfiguration(
-            clientId: "test",
-            redirectURI: "testapp://callback",
-            scopes: [.military],
-            authMode: .oauth,
-            verificationType: .single
-        )
-
-        let mockHTTP = MockHTTPClient()
-        let mockStore = MockCredentialStore()
-        let refresher = TokenRefresher(configuration: config, httpClient: mockHTTP)
-        let tokenManager = TokenManager(credentialStore: mockStore, refresher: refresher)
-        let jwksFetcher = MockJWKSFetcher()
-        jwksFetcher.jwks = JWKS(keys: [])
-
-        let idme = IDmeAuth(
-            configuration: config,
-            tokenManager: tokenManager,
-            httpClient: mockHTTP,
-            jwksFetcher: jwksFetcher
-        )
-
-        let mockSession = MockWebAuthSession()
-        mockSession.callbackURL = URL(string: "testapp://callback?code=test")!
-
-        await #expect(throws: IDmeAuthError.self) {
-            try await idme.login(webSession: mockSession)
-        }
-    }
-
     @Test("Rejects groups in sandbox")
     func rejectsGroupsInSandbox() async {
         let config = IDmeConfiguration(
@@ -107,7 +69,6 @@ struct IDmeAuthIntegrationTests {
             redirectURI: "testapp://callback",
             scopes: [.military],
             environment: .sandbox,
-            authMode: .oauthPKCE,
             verificationType: .groups
         )
 
@@ -115,14 +76,11 @@ struct IDmeAuthIntegrationTests {
         let mockStore = MockCredentialStore()
         let refresher = TokenRefresher(configuration: config, httpClient: mockHTTP)
         let tokenManager = TokenManager(credentialStore: mockStore, refresher: refresher)
-        let jwksFetcher = MockJWKSFetcher()
-        jwksFetcher.jwks = JWKS(keys: [])
 
         let idme = IDmeAuth(
             configuration: config,
             tokenManager: tokenManager,
-            httpClient: mockHTTP,
-            jwksFetcher: jwksFetcher
+            httpClient: mockHTTP
         )
 
         let mockSession = MockWebAuthSession()
@@ -139,14 +97,11 @@ struct IDmeAuthIntegrationTests {
         let mockStore = MockCredentialStore()
         let refresher = TokenRefresher(configuration: TestFixtures.singleConfig, httpClient: mockHTTP)
         let tokenManager = TokenManager(credentialStore: mockStore, refresher: refresher)
-        let jwksFetcher = MockJWKSFetcher()
-        jwksFetcher.jwks = JWKS(keys: [])
 
         let idme = IDmeAuth(
             configuration: TestFixtures.singleConfig,
             tokenManager: tokenManager,
-            httpClient: mockHTTP,
-            jwksFetcher: jwksFetcher
+            httpClient: mockHTTP
         )
 
         let mockSession = MockWebAuthSession()
@@ -157,16 +112,14 @@ struct IDmeAuthIntegrationTests {
         }
     }
 
-    @Test("Fetches user profile info")
-    func userInfoFetch() async throws {
+    @Test("Fetches user attributes")
+    func attributesFetch() async throws {
         let mockHTTP = MockHTTPClient()
-        mockHTTP.enqueue(data: TestFixtures.userInfoJSON, statusCode: 200)
+        mockHTTP.enqueue(data: TestFixtures.attributesJSON, statusCode: 200)
 
         let mockStore = MockCredentialStore()
         let refresher = TokenRefresher(configuration: TestFixtures.singleConfig, httpClient: mockHTTP)
         let tokenManager = TokenManager(credentialStore: mockStore, refresher: refresher)
-        let jwksFetcher = MockJWKSFetcher()
-        jwksFetcher.jwks = JWKS(keys: [])
 
         let creds = TestFixtures.makeCredentials()
         try await tokenManager.store(creds)
@@ -174,18 +127,15 @@ struct IDmeAuthIntegrationTests {
         let idme = IDmeAuth(
             configuration: TestFixtures.singleConfig,
             tokenManager: tokenManager,
-            httpClient: mockHTTP,
-            jwksFetcher: jwksFetcher
+            httpClient: mockHTTP
         )
 
-        let userInfo = try await idme.userInfo()
+        let attrs = try await idme.attributes()
 
-        #expect(userInfo.sub == "user-123")
-        #expect(userInfo.email == "test@example.com")
-        #expect(userInfo.emailVerified == true)
-        #expect(userInfo.givenName == "John")
-        #expect(userInfo.familyName == "Doe")
-        #expect(userInfo.name == "John Doe")
+        #expect(attrs.attributes.count == 2)
+        #expect(attrs.attributes.first?.handle == "uuid")
+        #expect(attrs.status.first?.group == "military")
+        #expect(attrs.status.first?.verified == true)
 
         let request = mockHTTP.capturedRequests.first!
         #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer test-access-token")
@@ -197,8 +147,6 @@ struct IDmeAuthIntegrationTests {
         let mockStore = MockCredentialStore()
         let refresher = TokenRefresher(configuration: TestFixtures.singleConfig, httpClient: mockHTTP)
         let tokenManager = TokenManager(credentialStore: mockStore, refresher: refresher)
-        let jwksFetcher = MockJWKSFetcher()
-        jwksFetcher.jwks = JWKS(keys: [])
 
         let creds = TestFixtures.makeCredentials()
         try await tokenManager.store(creds)
@@ -206,8 +154,7 @@ struct IDmeAuthIntegrationTests {
         let idme = IDmeAuth(
             configuration: TestFixtures.singleConfig,
             tokenManager: tokenManager,
-            httpClient: mockHTTP,
-            jwksFetcher: jwksFetcher
+            httpClient: mockHTTP
         )
 
         idme.logout()

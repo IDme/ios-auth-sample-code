@@ -3,7 +3,8 @@ import Foundation
 
 /// Main entry point for the IDmeAuthSDK.
 ///
-/// Provides login, logout, token management, and user info retrieval.
+/// Provides login, logout, token management, and user attribute retrieval
+/// using OAuth 2.0 with PKCE.
 ///
 /// ```swift
 /// let idme = IDmeAuth(configuration: IDmeConfiguration(
@@ -20,8 +21,6 @@ public final class IDmeAuth {
     private let configuration: IDmeConfiguration
     private let tokenManager: TokenManager
     private let httpClient: HTTPClient
-    private let jwksFetcher: JWKSFetching
-    private var lastNonce: String?
 
     /// Creates a new IDmeAuth instance with the given configuration.
     public convenience init(configuration: IDmeConfiguration) {
@@ -29,22 +28,18 @@ public final class IDmeAuth {
         let credentialStore = CredentialStore()
         let refresher = TokenRefresher(configuration: configuration, httpClient: httpClient)
         let tokenManager = TokenManager(credentialStore: credentialStore, refresher: refresher)
-        let jwksFetcher = JWKSClient(environment: configuration.environment, httpClient: httpClient)
-        self.init(configuration: configuration, tokenManager: tokenManager,
-                  httpClient: httpClient, jwksFetcher: jwksFetcher)
+        self.init(configuration: configuration, tokenManager: tokenManager, httpClient: httpClient)
     }
 
     /// Internal initializer for dependency injection in tests.
     init(
         configuration: IDmeConfiguration,
         tokenManager: TokenManager,
-        httpClient: HTTPClient,
-        jwksFetcher: JWKSFetching
+        httpClient: HTTPClient
     ) {
         self.configuration = configuration
         self.tokenManager = tokenManager
         self.httpClient = httpClient
-        self.jwksFetcher = jwksFetcher
     }
 
     // MARK: - Login
@@ -55,38 +50,29 @@ public final class IDmeAuth {
     /// - Returns: The authenticated user's credentials.
     @discardableResult
     public func login(from anchor: PresentationAnchor) async throws -> Credentials {
-        try validateConfiguration()
-
         let webSession = WebAuthSession(anchor: anchor)
         return try await login(webSession: webSession)
     }
 
     /// Internal login with injectable web session for testing.
     func login(webSession: WebAuthSessionProtocol) async throws -> Credentials {
-        try validateConfiguration()
-
         let authURL: URL
         let state: String
-        let nonce: String?
-        let pkce: PKCEGenerator?
+        let codeVerifier: String
 
         switch configuration.verificationType {
         case .single:
             let request = try AuthorizationRequest(configuration: configuration)
             authURL = request.url
             state = request.state
-            nonce = request.nonce
-            pkce = request.pkce
+            codeVerifier = request.pkce.codeVerifier
 
         case .groups:
             let request = try GroupsRequest(configuration: configuration)
             authURL = request.url
             state = request.state
-            nonce = request.nonce
-            pkce = request.pkce
+            codeVerifier = request.pkce.codeVerifier
         }
-
-        self.lastNonce = nonce
 
         Log.info("Starting auth session: \(configuration.verificationType.rawValue) mode")
 
@@ -98,14 +84,7 @@ public final class IDmeAuth {
         let code = try extractAuthorizationCode(from: callbackURL, expectedState: state)
 
         let tokenExchange = TokenExchangeRequest(configuration: configuration, httpClient: httpClient)
-        let tokenResponse = try await tokenExchange.exchange(code: code, codeVerifier: pkce?.codeVerifier)
-
-        // Validate ID token for OIDC mode
-        if configuration.authMode == .oidc, let idToken = tokenResponse.idToken {
-            let issuer = configuration.environment.apiBaseURL.appendingPathComponent("oidc").absoluteString
-            let validator = JWTValidator(jwksFetcher: jwksFetcher, issuer: issuer, clientId: configuration.clientId)
-            try await validator.validate(idToken: idToken, nonce: nonce)
-        }
+        let tokenResponse = try await tokenExchange.exchange(code: code, codeVerifier: codeVerifier)
 
         let credentials = tokenResponse.toCredentials()
         try await tokenManager.store(credentials)
@@ -128,7 +107,7 @@ public final class IDmeAuth {
 
     /// Fetches the available verification policies for the organization.
     ///
-    /// Uses the client credentials (client_id and client_secret) to authenticate.
+    /// Uses the client credentials (client_id) to authenticate.
     /// The policy `handle` can be used as the OAuth `scope` parameter.
     ///
     /// - Returns: An array of available policies.
@@ -136,10 +115,13 @@ public final class IDmeAuth {
         let url = APIEndpoint.policies(environment: configuration.environment)
 
         var components = URLComponents(url: url, resolvingAgainstBaseURL: false)!
-        components.queryItems = [
+        var queryItems = [
             URLQueryItem(name: "client_id", value: configuration.clientId),
-            URLQueryItem(name: "client_secret", value: configuration.clientSecret),
         ]
+        if let clientSecret = configuration.clientSecret {
+            queryItems.append(URLQueryItem(name: "client_secret", value: clientSecret))
+        }
+        components.queryItems = queryItems
 
         var request = URLRequest(url: components.url!)
         request.httpMethod = "GET"
@@ -164,14 +146,14 @@ public final class IDmeAuth {
         }
     }
 
-    // MARK: - User Info
+    // MARK: - Attributes
 
-    /// Fetches the authenticated user's profile information.
+    /// Fetches the authenticated user's attributes from the OAuth attributes endpoint.
     ///
-    /// - Returns: The user's profile info.
-    public func userInfo() async throws -> UserInfo {
+    /// - Returns: The user's attributes and verification statuses.
+    public func attributes() async throws -> AttributeResponse {
         let creds = try await tokenManager.validCredentials(minTTL: 60)
-        let url = APIEndpoint.userInfo(environment: configuration.environment)
+        let url = APIEndpoint.attributes(environment: configuration.environment)
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -193,7 +175,7 @@ public final class IDmeAuth {
         let jsonData = try Self.extractJSON(from: data)
 
         do {
-            return try JSONDecoder().decode(UserInfo.self, from: jsonData)
+            return try JSONDecoder().decode(AttributeResponse.self, from: jsonData)
         } catch {
             throw IDmeAuthError.decodingFailed(underlying: error.localizedDescription)
         }
@@ -201,7 +183,7 @@ public final class IDmeAuth {
 
     // MARK: - Raw Payload
 
-    /// Fetches the raw payload from the userinfo endpoint as key-value pairs.
+    /// Fetches the raw payload from the attributes endpoint as key-value pairs.
     ///
     /// The endpoint returns a JWT; this method decodes it and returns all claims
     /// as string key-value pairs, preserving the full payload.
@@ -209,7 +191,7 @@ public final class IDmeAuth {
     /// - Returns: An array of (key, value) pairs from the JWT payload.
     public func rawPayload() async throws -> [(key: String, value: String)] {
         let creds = try await tokenManager.validCredentials(minTTL: 60)
-        let url = APIEndpoint.userInfo(environment: configuration.environment)
+        let url = APIEndpoint.attributes(environment: configuration.environment)
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -259,44 +241,6 @@ public final class IDmeAuth {
         }
     }
 
-    // MARK: - Attributes (OAuth)
-
-    /// Fetches the authenticated user's attributes (OAuth mode).
-    ///
-    /// Returns the ID.me attributes/status format used by OAuth and PKCE flows.
-    /// For OIDC flows, use ``userInfo()`` instead.
-    ///
-    /// - Returns: The user's attributes and verification statuses.
-    public func attributes() async throws -> AttributeResponse {
-        let creds = try await tokenManager.validCredentials(minTTL: 60)
-        let url = APIEndpoint.userInfo(environment: configuration.environment)
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("Bearer \(creds.accessToken)", forHTTPHeaderField: "Authorization")
-
-        let (data, response): (Data, HTTPURLResponse)
-        do {
-            (data, response) = try await httpClient.data(for: request)
-        } catch let error as IDmeAuthError {
-            throw error
-        } catch {
-            throw IDmeAuthError.networkError(underlying: error.localizedDescription)
-        }
-
-        guard (200...299).contains(response.statusCode) else {
-            throw IDmeAuthError.unexpectedResponse(statusCode: response.statusCode)
-        }
-
-        let jsonData = try Self.extractJSON(from: data)
-
-        do {
-            return try JSONDecoder().decode(AttributeResponse.self, from: jsonData)
-        } catch {
-            throw IDmeAuthError.decodingFailed(underlying: error.localizedDescription)
-        }
-    }
-
     // MARK: - Logout
 
     /// Clears all stored credentials and tokens.
@@ -319,20 +263,6 @@ public final class IDmeAuth {
             return try JSONSerialization.data(withJSONObject: decoded.payload)
         }
         return data
-    }
-
-    private func validateConfiguration() throws {
-        if configuration.authMode == .oauth && configuration.clientSecret == nil {
-            throw IDmeAuthError.missingClientSecret
-        }
-
-        if configuration.verificationType == .groups && configuration.environment == .sandbox {
-            throw IDmeAuthError.groupsNotAvailableInSandbox
-        }
-
-        guard URL(string: configuration.redirectURI) != nil else {
-            throw IDmeAuthError.invalidRedirectURI
-        }
     }
 
     private func extractAuthorizationCode(from url: URL, expectedState: String) throws -> String {

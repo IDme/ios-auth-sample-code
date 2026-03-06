@@ -59,7 +59,6 @@ struct GroupsRequestTests {
             redirectURI: "testapp://callback",
             scopes: [.military],
             environment: .sandbox,
-            authMode: .oauthPKCE,
             verificationType: .groups
         )
 
@@ -68,12 +67,10 @@ struct GroupsRequestTests {
         }
     }
 
-    @Test("Includes PKCE for PKCE mode")
+    @Test("Includes PKCE code challenge")
     func includesPKCE() throws {
         let config = TestFixtures.groupsConfig
         let request = try GroupsRequest(configuration: config)
-
-        #expect(request.pkce != nil)
 
         let components = URLComponents(url: request.url, resolvingAgainstBaseURL: false)!
         let queryItems = components.queryItems ?? []

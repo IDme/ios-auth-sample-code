@@ -8,9 +8,6 @@ public struct Credentials: Codable, Sendable, Equatable {
     /// The OAuth refresh token (if provided).
     public let refreshToken: String?
 
-    /// The OIDC ID token (if OIDC mode was used).
-    public let idToken: String?
-
     /// The token type (typically "Bearer").
     public let tokenType: String
 
@@ -30,13 +27,11 @@ public struct Credentials: Codable, Sendable, Equatable {
     public init(
         accessToken: String,
         refreshToken: String?,
-        idToken: String?,
         tokenType: String,
         expiresAt: Date
     ) {
         self.accessToken = accessToken
         self.refreshToken = refreshToken
-        self.idToken = idToken
         self.tokenType = tokenType
         self.expiresAt = expiresAt
     }
