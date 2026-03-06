@@ -4,7 +4,6 @@ import Foundation
 enum TestFixtures {
     static let clientId = "test-client-id"
     static let redirectURI = "testapp://idme/callback"
-    static let clientSecret = "test-client-secret"
 
     static var singleConfig: IDmeConfiguration {
         IDmeConfiguration(
@@ -12,7 +11,6 @@ enum TestFixtures {
             redirectURI: redirectURI,
             scopes: [.military],
             environment: .production,
-            authMode: .oauthPKCE,
             verificationType: .single
         )
     }
@@ -23,31 +21,7 @@ enum TestFixtures {
             redirectURI: redirectURI,
             scopes: [.military, .firstResponder],
             environment: .production,
-            authMode: .oauthPKCE,
             verificationType: .groups
-        )
-    }
-
-    static var oauthConfig: IDmeConfiguration {
-        IDmeConfiguration(
-            clientId: clientId,
-            redirectURI: redirectURI,
-            scopes: [.military],
-            environment: .production,
-            authMode: .oauth,
-            verificationType: .single,
-            clientSecret: clientSecret
-        )
-    }
-
-    static var oidcConfig: IDmeConfiguration {
-        IDmeConfiguration(
-            clientId: clientId,
-            redirectURI: redirectURI,
-            scopes: [.openid, .profile, .email],
-            environment: .production,
-            authMode: .oidc,
-            verificationType: .single
         )
     }
 
@@ -57,7 +31,6 @@ enum TestFixtures {
             redirectURI: redirectURI,
             scopes: [.military],
             environment: .sandbox,
-            authMode: .oauthPKCE,
             verificationType: .single
         )
     }
@@ -65,13 +38,11 @@ enum TestFixtures {
     static func makeCredentials(
         accessToken: String = "test-access-token",
         refreshToken: String? = "test-refresh-token",
-        idToken: String? = nil,
         expiresIn: TimeInterval = 3600
     ) -> Credentials {
         Credentials(
             accessToken: accessToken,
             refreshToken: refreshToken,
-            idToken: idToken,
             tokenType: "Bearer",
             expiresAt: Date().addingTimeInterval(expiresIn)
         )
@@ -89,15 +60,16 @@ enum TestFixtures {
         """.data(using: .utf8)!
     }
 
-    static var userInfoJSON: Data {
+    static var attributesJSON: Data {
         """
         {
-            "sub": "user-123",
-            "email": "test@example.com",
-            "email_verified": true,
-            "given_name": "John",
-            "family_name": "Doe",
-            "name": "John Doe"
+            "attributes": [
+                {"handle": "uuid", "name": "UUID", "value": "user-123"},
+                {"handle": "email", "name": "Email", "value": "test@example.com"}
+            ],
+            "status": [
+                {"group": "military", "subgroups": ["Veteran"], "verified": true}
+            ]
         }
         """.data(using: .utf8)!
     }

@@ -4,10 +4,6 @@ import SwiftUI
 struct UserInfoView: View {
     @Environment(AuthViewModel.self) private var viewModel
 
-    private var title: String {
-        viewModel.authMode == .oidc ? "UserInfo" : "Attributes"
-    }
-
     var body: some View {
         NavigationStack {
             Group {
@@ -17,9 +13,9 @@ struct UserInfoView: View {
                     ContentUnavailableView {
                         Label("No Data", systemImage: "person.crop.circle.badge.questionmark")
                     } description: {
-                        Text("Pull down or tap below to fetch the payload.")
+                        Text("Pull down or tap below to fetch attributes.")
                     } actions: {
-                        Button("Fetch \(title)") {
+                        Button("Fetch Attributes") {
                             Task { await viewModel.fetchPayload() }
                         }
                         .buttonStyle(.borderedProminent)
@@ -32,7 +28,7 @@ struct UserInfoView: View {
                     )
                 }
             }
-            .navigationTitle(title)
+            .navigationTitle("Attributes")
             .refreshable {
                 await viewModel.fetchPayload()
             }

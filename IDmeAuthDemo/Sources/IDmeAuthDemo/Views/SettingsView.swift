@@ -10,24 +10,6 @@ struct SettingsView: View {
 
         NavigationStack {
             Form {
-                Section("Authentication Mode") {
-                    Picker("Mode", selection: $vm.authMode) {
-                        Text("OAuth + PKCE").tag(IDmeAuthMode.oauthPKCE)
-                        Text("OIDC").tag(IDmeAuthMode.oidc)
-                    }
-                    .pickerStyle(.segmented)
-
-                    if viewModel.authMode == .oidc {
-                        Text("OpenID Connect. Returns an ID token with identity claims.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text("OAuth 2.0 with PKCE challenge. Recommended for mobile.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
                 Section("Environment") {
                     Picker("Environment", selection: $vm.environment) {
                         Text("Production").tag(IDmeEnvironment.production)

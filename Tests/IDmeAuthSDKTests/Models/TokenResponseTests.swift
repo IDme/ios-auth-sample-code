@@ -16,23 +16,6 @@ struct TokenResponseTests {
         #expect(response.scope == "military")
     }
 
-    @Test("Decodes response with ID token")
-    func decodeWithIdToken() throws {
-        let json = """
-        {
-            "access_token": "at",
-            "token_type": "Bearer",
-            "expires_in": 1800,
-            "refresh_token": "rt",
-            "id_token": "eyJhbGciOiJSUzI1NiJ9.payload.sig",
-            "scope": "openid profile"
-        }
-        """.data(using: .utf8)!
-
-        let response = try JSONDecoder().decode(TokenResponse.self, from: json)
-        #expect(response.idToken == "eyJhbGciOiJSUzI1NiJ9.payload.sig")
-    }
-
     @Test("Converts to Credentials")
     func toCredentials() throws {
         let json = TestFixtures.tokenResponseJSON
@@ -58,7 +41,6 @@ struct TokenResponseTests {
         let response = try JSONDecoder().decode(TokenResponse.self, from: json)
         #expect(response.accessToken == "at")
         #expect(response.refreshToken == nil)
-        #expect(response.idToken == nil)
         #expect(response.scope == nil)
     }
 }

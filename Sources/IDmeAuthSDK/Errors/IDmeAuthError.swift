@@ -4,9 +4,6 @@ import Foundation
 public enum IDmeAuthError: Error, Sendable, Equatable {
     // MARK: - Configuration
 
-    /// The client secret is required for `.oauth` mode but was not provided.
-    case missingClientSecret
-
     /// The groups verification type is only available in production.
     case groupsNotAvailableInSandbox
 
@@ -46,15 +43,6 @@ public enum IDmeAuthError: Error, Sendable, Equatable {
     /// The JWT string is malformed.
     case invalidJWT(reason: String)
 
-    /// The JWT signature verification failed.
-    case jwtSignatureInvalid
-
-    /// A JWT claim failed validation (e.g., expired, wrong audience).
-    case jwtClaimInvalid(claim: String, reason: String)
-
-    /// No matching key was found in the JWKS for the JWT's `kid`.
-    case jwksKeyNotFound(kid: String)
-
     // MARK: - Network
 
     /// A network request failed.
@@ -73,26 +61,20 @@ public enum IDmeAuthError: Error, Sendable, Equatable {
 
     public static func == (lhs: IDmeAuthError, rhs: IDmeAuthError) -> Bool {
         switch (lhs, rhs) {
-        case (.missingClientSecret, .missingClientSecret),
-             (.groupsNotAvailableInSandbox, .groupsNotAvailableInSandbox),
+        case (.groupsNotAvailableInSandbox, .groupsNotAvailableInSandbox),
              (.invalidRedirectURI, .invalidRedirectURI),
              (.userCancelled, .userCancelled),
              (.stateMismatch, .stateMismatch),
              (.missingAuthorizationCode, .missingAuthorizationCode),
              (.invalidCallbackURL, .invalidCallbackURL),
              (.notAuthenticated, .notAuthenticated),
-             (.refreshTokenExpired, .refreshTokenExpired),
-             (.jwtSignatureInvalid, .jwtSignatureInvalid):
+             (.refreshTokenExpired, .refreshTokenExpired):
             return true
         case let (.tokenExchangeFailed(l1, l2), .tokenExchangeFailed(r1, r2)):
             return l1 == r1 && l2 == r2
         case let (.tokenRefreshFailed(l1, l2), .tokenRefreshFailed(r1, r2)):
             return l1 == r1 && l2 == r2
         case let (.invalidJWT(l), .invalidJWT(r)):
-            return l == r
-        case let (.jwtClaimInvalid(l1, l2), .jwtClaimInvalid(r1, r2)):
-            return l1 == r1 && l2 == r2
-        case let (.jwksKeyNotFound(l), .jwksKeyNotFound(r)):
             return l == r
         case let (.networkError(l), .networkError(r)):
             return l == r
@@ -111,8 +93,6 @@ public enum IDmeAuthError: Error, Sendable, Equatable {
 extension IDmeAuthError: LocalizedError {
     public var errorDescription: String? {
         switch self {
-        case .missingClientSecret:
-            return "Client secret is required for OAuth (non-PKCE) mode."
         case .groupsNotAvailableInSandbox:
             return "The groups verification type is only available in production."
         case .invalidRedirectURI:
@@ -135,12 +115,6 @@ extension IDmeAuthError: LocalizedError {
             return "Token refresh failed (\(statusCode)): \(message)"
         case let .invalidJWT(reason):
             return "Invalid JWT: \(reason)"
-        case .jwtSignatureInvalid:
-            return "JWT signature verification failed."
-        case let .jwtClaimInvalid(claim, reason):
-            return "JWT claim '\(claim)' is invalid: \(reason)"
-        case let .jwksKeyNotFound(kid):
-            return "No matching key found in JWKS for kid '\(kid)'."
         case let .networkError(underlying):
             return "Network error: \(underlying)"
         case let .unexpectedResponse(statusCode):

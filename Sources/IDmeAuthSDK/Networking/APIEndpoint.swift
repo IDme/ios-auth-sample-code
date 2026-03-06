@@ -17,23 +17,13 @@ enum APIEndpoint {
         environment.apiBaseURL.appendingPathComponent("oauth/token")
     }
 
-    /// UserInfo endpoint.
-    static func userInfo(environment: IDmeEnvironment) -> URL {
-        environment.apiBaseURL.appendingPathComponent("api/public/v3/userinfo")
+    /// Attributes endpoint (OAuth).
+    static func attributes(environment: IDmeEnvironment) -> URL {
+        environment.apiBaseURL.appendingPathComponent("api/public/v3/attributes.json")
     }
 
     /// Policies endpoint.
     static func policies(environment: IDmeEnvironment) -> URL {
         environment.apiBaseURL.appendingPathComponent("api/public/v3/policies")
-    }
-
-    /// OIDC discovery endpoint.
-    static func discovery(environment: IDmeEnvironment) -> URL {
-        environment.discoveryURL
-    }
-
-    /// JWKS endpoint.
-    static func jwks(environment: IDmeEnvironment) -> URL {
-        environment.jwksURL
     }
 }

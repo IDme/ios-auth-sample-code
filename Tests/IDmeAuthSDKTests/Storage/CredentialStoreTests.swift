@@ -8,8 +8,7 @@ struct CredentialStoreTests {
     func serialization() throws {
         let credentials = TestFixtures.makeCredentials(
             accessToken: "access-123",
-            refreshToken: "refresh-456",
-            idToken: "id-789"
+            refreshToken: "refresh-456"
         )
 
         let encoder = JSONEncoder()
@@ -20,15 +19,13 @@ struct CredentialStoreTests {
 
         #expect(decoded.accessToken == "access-123")
         #expect(decoded.refreshToken == "refresh-456")
-        #expect(decoded.idToken == "id-789")
         #expect(decoded.tokenType == "Bearer")
     }
 
     @Test("Handles nil optional fields")
     func nilOptionals() throws {
         let credentials = TestFixtures.makeCredentials(
-            refreshToken: nil,
-            idToken: nil
+            refreshToken: nil
         )
 
         let encoder = JSONEncoder()
@@ -38,7 +35,6 @@ struct CredentialStoreTests {
         let decoded = try decoder.decode(Credentials.self, from: data)
 
         #expect(decoded.refreshToken == nil)
-        #expect(decoded.idToken == nil)
     }
 
     @Test("Mock store save and load")

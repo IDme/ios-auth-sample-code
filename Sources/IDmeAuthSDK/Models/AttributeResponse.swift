@@ -1,10 +1,8 @@
 import Foundation
 
-/// Response from the ID.me `/api/public/v3/userinfo` endpoint (OAuth mode).
+/// Response from the ID.me `/api/public/v3/attributes.json` endpoint.
 ///
-/// This format is returned when using `.oauth` or `.oauthPKCE` auth modes.
 /// The endpoint returns a JWT whose payload contains `attributes` and `status` arrays.
-/// OIDC mode returns standard UserInfo instead.
 public struct AttributeResponse: Sendable, Equatable {
     /// The user's verified attributes (e.g. name, email, zip).
     public let attributes: [Attribute]
@@ -59,7 +57,10 @@ extension AttributeResponse: Codable {
             }
         }
         self.attributes = attrs
-        self.status = []
+
+        // Try to decode status even in fallback mode
+        let statusContainer = try decoder.container(keyedBy: CodingKeys.self)
+        self.status = (try? statusContainer.decodeIfPresent([VerificationStatus].self, forKey: .status)) ?? []
     }
 }
 

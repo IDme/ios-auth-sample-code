@@ -48,7 +48,6 @@ final class WebAuthSession: NSObject, WebAuthSessionProtocol, ASWebAuthenticatio
             }
 
             session.presentationContextProvider = self
-            session.prefersEphemeralWebBrowserSession = true
             session.start()
         }
     }

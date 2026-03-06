@@ -39,22 +39,6 @@ struct TokenExchangeRequestTests {
         #expect(bodyString.contains("client_id=test-client-id"))
     }
 
-    @Test("Includes client secret when configured")
-    func includesClientSecret() async throws {
-        let mockHTTP = MockHTTPClient()
-        mockHTTP.enqueue(data: TestFixtures.tokenResponseJSON, statusCode: 200)
-
-        let config = TestFixtures.oauthConfig
-        let exchange = TokenExchangeRequest(configuration: config, httpClient: mockHTTP)
-
-        _ = try await exchange.exchange(code: "auth-code", codeVerifier: nil)
-
-        let request = mockHTTP.capturedRequests.first!
-        let bodyString = String(data: request.httpBody!, encoding: .utf8)!
-
-        #expect(bodyString.contains("client_secret=test-client-secret"))
-    }
-
     @Test("Throws on HTTP error")
     func exchangeFailure() async {
         let mockHTTP = MockHTTPClient()
