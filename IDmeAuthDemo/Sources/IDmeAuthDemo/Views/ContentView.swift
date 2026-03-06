@@ -17,7 +17,7 @@ struct ContentView: View {
 
             UserInfoView()
                 .tabItem {
-                    Label(payloadTabLabel, systemImage: "person.crop.circle")
+                    Label("Attributes", systemImage: "person.crop.circle")
                 }
 
             SettingsView()
@@ -30,10 +30,6 @@ struct ContentView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
-    }
-
-    private var payloadTabLabel: String {
-        viewModel.authMode == .oidc ? "UserInfo" : "Attributes"
     }
 
     private var showingError: Binding<Bool> {

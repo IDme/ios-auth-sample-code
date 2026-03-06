@@ -14,13 +14,10 @@ public struct IDmeConfiguration: Sendable {
     /// The environment to use (sandbox or production).
     public let environment: IDmeEnvironment
 
-    /// The authentication mode (OAuth, OAuth+PKCE, or OIDC).
-    public let authMode: IDmeAuthMode
-
     /// The verification type (single scope or groups/multi-scope).
     public let verificationType: IDmeVerificationType
 
-    /// The client secret. Required for `.oauth` mode; unused for `.oauthPKCE`.
+    /// The client secret issued by ID.me. Required for the policies endpoint.
     public let clientSecret: String?
 
     public init(
@@ -28,7 +25,6 @@ public struct IDmeConfiguration: Sendable {
         redirectURI: String,
         scopes: [IDmeScope],
         environment: IDmeEnvironment = .production,
-        authMode: IDmeAuthMode = .oauthPKCE,
         verificationType: IDmeVerificationType = .single,
         clientSecret: String? = nil
     ) {
@@ -36,7 +32,6 @@ public struct IDmeConfiguration: Sendable {
         self.redirectURI = redirectURI
         self.scopes = scopes
         self.environment = environment
-        self.authMode = authMode
         self.verificationType = verificationType
         self.clientSecret = clientSecret
     }

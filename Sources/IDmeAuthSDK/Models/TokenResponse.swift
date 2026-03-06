@@ -6,7 +6,6 @@ struct TokenResponse: Codable, Sendable {
     let tokenType: String
     let expiresIn: Int
     let refreshToken: String?
-    let idToken: String?
     let scope: String?
 
     enum CodingKeys: String, CodingKey {
@@ -14,7 +13,6 @@ struct TokenResponse: Codable, Sendable {
         case tokenType = "token_type"
         case expiresIn = "expires_in"
         case refreshToken = "refresh_token"
-        case idToken = "id_token"
         case scope
     }
 
@@ -23,7 +21,6 @@ struct TokenResponse: Codable, Sendable {
         Credentials(
             accessToken: accessToken,
             refreshToken: refreshToken,
-            idToken: idToken,
             tokenType: tokenType,
             expiresAt: Date().addingTimeInterval(TimeInterval(expiresIn))
         )

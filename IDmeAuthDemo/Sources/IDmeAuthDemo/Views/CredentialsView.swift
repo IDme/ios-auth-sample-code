@@ -36,12 +36,6 @@ struct CredentialsView: View {
                 }
             }
 
-            if let idToken = creds.idToken {
-                Section("ID Token (OIDC)") {
-                    TokenRow(label: "Token", value: idToken)
-                }
-            }
-
             Section("Token Info") {
                 LabeledContent("Type", value: creds.tokenType)
                 expiryRow(creds)

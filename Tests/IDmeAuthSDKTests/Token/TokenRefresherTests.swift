@@ -43,18 +43,4 @@ struct TokenRefresherTests {
             try await refresher.refresh(refreshToken: "bad-token")
         }
     }
-
-    @Test("Includes client secret when configured")
-    func includesClientSecret() async throws {
-        let mockHTTP = MockHTTPClient()
-        mockHTTP.enqueue(data: TestFixtures.tokenResponseJSON, statusCode: 200)
-
-        let refresher = TokenRefresher(configuration: TestFixtures.oauthConfig, httpClient: mockHTTP)
-        _ = try await refresher.refresh(refreshToken: "refresh-token")
-
-        let request = mockHTTP.capturedRequests.first!
-        let bodyString = String(data: request.httpBody!, encoding: .utf8)!
-
-        #expect(bodyString.contains("client_secret=test-client-secret"))
-    }
 }
