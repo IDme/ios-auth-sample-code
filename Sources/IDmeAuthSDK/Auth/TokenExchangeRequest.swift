@@ -25,10 +25,6 @@ struct TokenExchangeRequest {
             body["code_verifier"] = codeVerifier
         }
 
-        if let clientSecret = configuration.clientSecret {
-            body["client_secret"] = clientSecret
-        }
-
         let bodyString = body.map { "\($0.key)=\(percentEncode($0.value))" }.joined(separator: "&")
 
         var request = URLRequest(url: tokenURL)

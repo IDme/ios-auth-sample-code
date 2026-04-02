@@ -2,11 +2,6 @@ import Foundation
 
 /// Type-safe OAuth scopes supported by ID.me.
 public enum IDmeScope: String, Sendable, CaseIterable {
-    // OIDC standard scopes
-    case openid
-    case profile
-    case email
-
     // ID.me verification scopes
     case military
     case firstResponder = "first_responder"
