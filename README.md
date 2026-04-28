@@ -1,12 +1,12 @@
 # IDmeAuthSDK
 
-A native iOS SDK for integrating [ID.me](https://id.me) identity verification into your app using OAuth 2.0 Authorization Code with PKCE. Includes built-in token management, Keychain storage, and automatic token refresh.
+iOS SDK for integrating [ID.me](https://id.me) community verification into your app using OAuth 2.0 Authorization Code with PKCE. Includes built-in token management, Keychain storage, and automatic token refresh.
 
 ## Requirements
 
 - iOS 15+ / macOS 12+
-- Swift 5.9+
-- Xcode 15+
+- Swift 6.0+
+- Xcode 16+
 
 ## Installation
 
