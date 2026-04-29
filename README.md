@@ -99,7 +99,9 @@ let idme = IDmeAuth(configuration: config)
 | `.teacher` | `teacher` |
 | `.student` | `student` |
 | `.governmentEmployee` | `government` |
-| `.lowIncome` | `low_income` |
+| `.publicBenefitRecipient` | `pbr` |
+| `.age` | `age` |
+| `.senior` | `senior` |
 
 #### Verification Types
 
