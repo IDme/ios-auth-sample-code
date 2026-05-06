@@ -9,7 +9,9 @@ public enum IDmeScope: String, Sendable, CaseIterable {
     case teacher
     case student
     case governmentEmployee = "government"
-    case lowIncome = "low_income"
+    case publicBenefitRecipient = "pbr"
+    case age = "age"
+    case senior = "senior"
 
     /// Space-separated scope string for the authorize endpoint.
     static func authorizeString(from scopes: [IDmeScope]) -> String {
