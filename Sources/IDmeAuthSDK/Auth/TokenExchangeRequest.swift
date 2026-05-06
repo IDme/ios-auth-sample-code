@@ -25,6 +25,10 @@ struct TokenExchangeRequest {
             body["code_verifier"] = codeVerifier
         }
 
+        if let clientSecret = configuration.clientSecret {
+            body["client_secret"] = clientSecret
+        }
+
         let bodyString = body.map { "\($0.key)=\(percentEncode($0.value))" }.joined(separator: "&")
 
         var request = URLRequest(url: tokenURL)
@@ -57,6 +61,8 @@ struct TokenExchangeRequest {
     }
 
     private func percentEncode(_ string: String) -> String {
-        string.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? string
+        var allowed = CharacterSet.alphanumerics
+        allowed.insert(charactersIn: "-._~")
+        return string.addingPercentEncoding(withAllowedCharacters: allowed) ?? string
     }
 }

@@ -2,7 +2,8 @@ import Foundation
 
 /// Type-safe OAuth scopes supported by ID.me.
 public enum IDmeScope: String, Sendable, CaseIterable {
-    // ID.me verification scopes
+    case login
+    case nistIal2Aal2 = "http://idmanagement.gov/ns/assurance/ial/2/aal/2"
     case military
     case firstResponder = "first_responder"
     case nurse

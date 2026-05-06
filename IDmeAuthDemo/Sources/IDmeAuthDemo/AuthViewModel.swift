@@ -56,21 +56,13 @@ final class AuthViewModel {
     // MARK: - Policies
 
     func fetchPolicies() async {
-        isLoadingPolicies = true
-
-        do {
-            let auth = buildAuth(scopes: [.military])
-            let fetched = try await auth.policies()
-            policies = fetched.filter { $0.active }
-            // Clear selections that no longer exist
-            let validHandles = Set(policies.map(\.handle))
-            selectedPolicies = selectedPolicies.intersection(validHandles)
-        } catch {
-            print("[IDmeAuthDemo] fetchPolicies error: \(error)")
-            policies = []
-        }
-
-        isLoadingPolicies = false
+        policies = [
+            Policy(name: "Login", handle: IDmeScope.login.rawValue, active: true, groups: []),
+            Policy(name: "NIST AAL2/IAL2", handle: IDmeScope.nistIal2Aal2.rawValue, active: true, groups: []),
+            Policy(name: "Military", handle: IDmeScope.military.rawValue, active: true, groups: []),
+        ]
+        let validHandles = Set(policies.map(\.handle))
+        selectedPolicies = selectedPolicies.intersection(validHandles)
     }
 
     // MARK: - Actions

@@ -52,7 +52,7 @@ struct LoginView: View {
             Text("Verification Policies")
         } footer: {
             if !viewModel.policies.isEmpty {
-                Text("Policies are fetched from /api/public/v3/policies. The handle is used as the OAuth scope.")
+                Text("Select a policy to use as the OAuth scope.")
             }
         }
     }

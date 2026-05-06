@@ -19,6 +19,13 @@ public struct Policy: Codable, Sendable, Equatable, Identifiable {
 
     public var id: String { handle }
 
+    public init(name: String, handle: String, active: Bool, groups: [Group]) {
+        self.name = name
+        self.handle = handle
+        self.active = active
+        self.groups = groups
+    }
+
     public struct Group: Codable, Sendable, Equatable {
         /// Human-readable group name (e.g. "Military").
         public let name: String

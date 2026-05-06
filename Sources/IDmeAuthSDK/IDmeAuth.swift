@@ -155,7 +155,7 @@ public final class IDmeAuth {
         let creds = try await tokenManager.validCredentials(minTTL: 60)
         let url = APIEndpoint.attributes(environment: configuration.environment)
 
-        var request = URLRequest(url: url)
+        var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData)
         request.httpMethod = "GET"
         request.setValue("Bearer \(creds.accessToken)", forHTTPHeaderField: "Authorization")
 
