@@ -108,18 +108,15 @@ final class AuthViewModel {
 
     func fetchPayload() async {
         guard let auth = idmeAuth else {
-            NSLog("[IDmeAuthDemo] fetchPayload: idmeAuth is nil")
             errorMessage = "Not authenticated"
             return
         }
 
         isLoading = true
         errorMessage = nil
-        NSLog("[IDmeAuthDemo] fetchPayload: calling auth.attributes()")
 
         do {
             let response = try await auth.attributes()
-            NSLog("[IDmeAuthDemo] fetchPayload: got %d attributes, %d statuses", response.attributes.count, response.status.count)
             var claims: [(key: String, value: String)] = response.attributes.map {
                 (key: $0.handle, value: $0.value ?? "")
             }
@@ -133,7 +130,6 @@ final class AuthViewModel {
             }
             payloadClaims = claims
         } catch {
-            NSLog("[IDmeAuthDemo] fetchPayload error: %@", error.localizedDescription)
             errorMessage = error.localizedDescription
         }
 
