@@ -17,8 +17,30 @@ public struct AttributeResponse: Sendable, Equatable {
         /// Human-readable label (e.g. "First Name").
         public let name: String
 
-        /// The attribute value.
+        /// The attribute value. Arrays are joined with ", "; objects/null decode as nil.
         public let value: String?
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            handle = try container.decode(String.self, forKey: .handle)
+            name = try container.decode(String.self, forKey: .name)
+
+            if let str = try? container.decodeIfPresent(String.self, forKey: .value) {
+                value = str
+            } else if let arr = try? container.decodeIfPresent([String].self, forKey: .value) {
+                value = arr.joined(separator: ", ")
+            } else {
+                value = nil
+            }
+        }
+
+        public init(handle: String, name: String, value: String?) {
+            self.handle = handle
+            self.name = name
+            self.value = value
+        }
+
+        enum CodingKeys: String, CodingKey { case handle, name, value }
     }
 
     public struct VerificationStatus: Codable, Sendable, Equatable {

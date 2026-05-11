@@ -42,7 +42,7 @@ final class AuthViewModel {
         }
     }
 
-    private var clientSecret: String {
+    private var clientSecret: String? {
         switch environment {
         case .production: "<YOUR_PRODUCTION_CLIENT_SECRET>"
         case .sandbox: "<YOUR_SANDBOX_CLIENT_SECRET>"
@@ -56,21 +56,13 @@ final class AuthViewModel {
     // MARK: - Policies
 
     func fetchPolicies() async {
-        isLoadingPolicies = true
-
-        do {
-            let auth = buildAuth(scopes: [.military])
-            let fetched = try await auth.policies()
-            policies = fetched.filter { $0.active }
-            // Clear selections that no longer exist
-            let validHandles = Set(policies.map(\.handle))
-            selectedPolicies = selectedPolicies.intersection(validHandles)
-        } catch {
-            print("[IDmeAuthDemo] fetchPolicies error: \(error)")
-            policies = []
-        }
-
-        isLoadingPolicies = false
+        policies = [
+            Policy(name: "Login", handle: IDmeScope.login.rawValue, active: true),
+            Policy(name: "NIST AAL2/IAL2", handle: IDmeScope.nistIal2Aal2.rawValue, active: true),
+            Policy(name: "Military", handle: IDmeScope.military.rawValue, active: true),
+        ]
+        let validHandles = Set(policies.map(\.handle))
+        selectedPolicies = selectedPolicies.intersection(validHandles)
     }
 
     // MARK: - Actions
