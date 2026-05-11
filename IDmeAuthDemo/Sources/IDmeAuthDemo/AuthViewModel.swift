@@ -57,10 +57,9 @@ final class AuthViewModel {
 
     func fetchPolicies() async {
         policies = [
+            Policy(name: "Login", handle: IDmeScope.login.rawValue, active: true),
+            Policy(name: "NIST AAL2/IAL2", handle: IDmeScope.nistIal2Aal2.rawValue, active: true),
             Policy(name: "Military", handle: IDmeScope.military.rawValue, active: true),
-            Policy(name: "First Responder", handle: IDmeScope.firstResponder.rawValue, active: true),
-            Policy(name: "Government Employee", handle: IDmeScope.governmentEmployee.rawValue, active: true),
-            Policy(name: "Public Benefit Recipient", handle: IDmeScope.publicBenefitRecipient.rawValue, active: true),
         ]
         let validHandles = Set(policies.map(\.handle))
         selectedPolicies = selectedPolicies.intersection(validHandles)
