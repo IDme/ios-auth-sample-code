@@ -42,7 +42,7 @@ final class AuthViewModel {
         }
     }
 
-    private var clientSecret: String {
+    private var clientSecret: String? {
         switch environment {
         case .production: "<YOUR_PRODUCTION_CLIENT_SECRET>"
         case .sandbox: "<YOUR_SANDBOX_CLIENT_SECRET>"
