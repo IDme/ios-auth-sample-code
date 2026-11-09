@@ -15,12 +15,15 @@ updates:
     labels:
       - dependencies
     commit-message:
-      prefix: "SECURITY-0: chore(deps)"
+      prefix: chore(deps)
     groups:
       swift-minor-patch:
         update-types:
           - minor
           - patch
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -32,9 +35,12 @@ updates:
     labels:
       - dependencies
     commit-message:
-      prefix: "SECURITY-0: chore(deps)"
+      prefix: chore(deps)
     groups:
       github-actions-minor-patch:
         update-types:
           - minor
           - patch
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
