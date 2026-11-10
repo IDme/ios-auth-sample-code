@@ -21,6 +21,10 @@ updates:
         update-types:
           - minor
           - patch
+      swift-by-dependency:
+        patterns:
+          - "*"
+        group-by: dependency-name
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
